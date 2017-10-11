@@ -7,7 +7,7 @@ Preprocess
 ----------------
 ## 1. Interface
 
-### Booking_Review 
+### BookingReview 
 ```
 class BookingReview
 - company : string
