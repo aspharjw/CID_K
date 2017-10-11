@@ -56,3 +56,21 @@ class FormattedReview
 ```
 
 -> output of module FormattingModule
+
+### ReviewDB
+```
+class ReviewDB(object):
+    def __init__(self):
+        self.review_dict = {}
+        self.review_tree = ReviewTree()
+    
+    def add_review_list(self, bookingReview_list):
+        ...
+                
+    def add_review(self, bookingReview):
+        ...
+        
+    ...
+```
+
+-> call add_review in module XlToBookingModule.
