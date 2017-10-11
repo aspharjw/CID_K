@@ -15,13 +15,13 @@ class BookingReview
 - rate : int
 - context : string
 - post_time : float
-- spam_ham : boolean
+- label : boolean
 - review_id : int
 - db_node : ReviewNode
 ```
 -> output of module XlToBookingModule, input for module PostagModule
 
-### PreProcessReview
+### PreprocessedReview
 ```
 class PreProcessReview
 - company_postag : (postaged output)
@@ -31,7 +31,7 @@ class PreProcessReview
 - id : string
 - rate : int
 - post_time : float
-- spam_ham : boolean
+- label : boolean
 - review_id : int
 - db_node : ReviewNode
 ```
