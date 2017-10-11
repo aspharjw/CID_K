@@ -1,5 +1,4 @@
 # CID_K
-===================
 2017 SNU Creative Integrated Design 1 <br />
 Team K <br />
 spam filtering project <br />
