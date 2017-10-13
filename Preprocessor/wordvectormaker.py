@@ -42,7 +42,7 @@ def word2vec_to_PreprocessReview_list(word2vec_model_input,PreprocessReview_inpu
 
 
 # TEST CODE
-
+'''
 word2vec_model_path = './models/namuwiki_testmodel'
 word2vec_model = gensim.models.Word2Vec.load(word2vec_model_path)
 test = [PreprocessReview(['여담/Noun','으로/Josa'],None,['세계/Noun', '수의/Noun', '미궁/Noun' ,'시리즈/Noun'],None,'Hello',10,100,True,678927),PreprocessReview(['밀레니엄/Noun', '의/Josa'],None,['던전/Noun', '크/Verb', '롤러/Noun'],None,'world',100,1730,False,67227)]
@@ -51,3 +51,4 @@ test3 = word2vec_to_PreprocessReview_list(word2vec_model,test)
 print(test3[0])
 print(test3[1])
 print(test3)
+"""

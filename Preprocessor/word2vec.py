@@ -15,7 +15,9 @@ def word2vec_model_maker(corpus_path, model_save_path):
     model.save(model_save_path)
 
 # Test code
+"""
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 corpus_path_param = './corpus'
 model_save_path_param = './models/namuwiki_testmodel'
 word2vec_model_maker(corpus_path_param, model_save_path_param)
+"""

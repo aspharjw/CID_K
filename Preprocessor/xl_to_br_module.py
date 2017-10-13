@@ -13,8 +13,8 @@ def xl_to_BookingReview(file_dir):
         rows = []
         # 모든 데이터 처리를 원할 경우 -> range(1, number_of_rows)
         for row in range(1, number_of_rows):
-            print("processing " + str(count) + " th unit...")
-            count += 1
+            #print("processing " + str(count) + " th unit...")
+            #count += 1
             values = []
             values.append(str(sheet.cell(row,0).value))
             values.append(str(sheet.cell(row,1).value))
