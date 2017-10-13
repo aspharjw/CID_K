@@ -47,7 +47,11 @@ def word2vec_to_PreprocessReview(word2vec_model_input, PreprocessReview_input):
         context_word2vec_output.append(word2vec_model_input.wv[word])  # wv is dictionary and word is string.
     context_word2vec_output = np.array(context_word2vec_output)
 
-    return PreprocessReview(PreprocessReview_input.company_postag,
+    PreprocessReview_input.company_word2vec = company_word2vec_output
+    PreprocessReview_input.context_word2vec = context_word2vec_output
+    return PreprocessReview_input
+    '''
+    #return PreprocessReview(PreprocessReview_input.company_postag,
                             company_word2vec_output,
                             PreprocessReview_input.context_postag,
                             context_word2vec_output,
@@ -56,6 +60,7 @@ def word2vec_to_PreprocessReview(word2vec_model_input, PreprocessReview_input):
                             PreprocessReview_input.post_time,
                             PreprocessReview_input.label,
                             PreprocessReview_input.review_id)
+    '''
 
 def word2vec_to_PreprocessReview_list(word2vec_model_input,PreprocessReview_input_list):
     output = []
