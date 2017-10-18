@@ -8,14 +8,23 @@ def word2vec_to_PreprocessReview(word2vec_model_input, PreprocessReview_input):
     company_word2vec_output = []
     wordlist_iterator = iter(PreprocessReview_input.company_postag)
     for word in wordlist_iterator:
-        company_word2vec_output.append(word2vec_model_input.wv[word])  # wv is dictionary and word is string.
+        try:
+            wordvector = word2vec_model_input.wv[word]
+            company_word2vec_output.append(wordvector)  # wv is dictionary and word is string.
+        except KeyError:
+            print(word + " not in vocabulary MAN")    
+        
     company_word2vec_output = np.array(company_word2vec_output)
 
     # Context word2vec
     context_word2vec_output = []
     wordlist_iterator = iter(PreprocessReview_input.context_postag)
     for word in wordlist_iterator:
-        context_word2vec_output.append(word2vec_model_input.wv[word])  # wv is dictionary and word is string.
+        try:
+            wordvector = word2vec_model_input.wv[word]
+            context_word2vec_output.append(wordvector)  # wv is dictionary and word is string.
+        except KeyError:
+            print(word + " not in vocabulary MAN")
     context_word2vec_output = np.array(context_word2vec_output)
 
     PreprocessReview_input.company_word2vec = company_word2vec_output

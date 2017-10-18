@@ -22,7 +22,7 @@ def corpus_postagger(inputtxtpath, outputtxtpath, extraction_format_re,tagger):
 # Test code
 
 tagger_param = Twitter()
-inputtxtpath_param = './text/test3.txt'
-outputtxtpath_param = './corpus/out3.txt'
+inputtxtpath_param = './text/namuwiki_articles.txt'
+outputtxtpath_param = './corpus/namuwiki_articles_Twitter_krengnum.txt'
 extraction_format_re_param = '[^ a-zA-Z0-9.!?ㄱ-ㅣ가-힣\n]+'
 corpus_postagger(inputtxtpath_param,outputtxtpath_param,extraction_format_re_param,tagger_param)

@@ -1,5 +1,6 @@
 import gensim, logging, os
 
+
 class MySentences(object):
     def __init__(self, dirname):
         self.dirname = dirname
@@ -15,9 +16,8 @@ def word2vec_model_maker(corpus_path, model_save_path):
     model.save(model_save_path)
 
 # Test code
-"""
+
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-corpus_path_param = './corpus'
-model_save_path_param = './models/namuwiki_testmodel'
+corpus_path_param = './corpus/Komoran'
+model_save_path_param = './models/namuwiki_testmodel_Komoran.model'
 word2vec_model_maker(corpus_path_param, model_save_path_param)
-"""
