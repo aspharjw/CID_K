@@ -6,7 +6,11 @@ def komoran(BRList):
 
     PRList = []
 
+    count = 0
     for BR in BRList:
+        if(count % 10000 == 0):
+            print("postagging [komoran] " + str(count) + " ith unit...")
+        count += 1
         company_postag = komoran.pos(BR.company)
         flat_company_postag = []
         for tup in company_postag:
@@ -31,7 +35,11 @@ def twitter(BRList):
 
     PRList = []
 
+    count = 0
     for BR in BRList:
+        if(count % 10000 == 0):
+            print("postagging [twitter] " + str(count) + " ith unit...")
+        count += 1
         company_postag = twitter.pos(BR.company)
         flat_company_postag = []
         for tup in company_postag:
