@@ -16,7 +16,7 @@ def xl_to_BookingReview(file_dir):
         count = 0
         rows = []
         # 모든 데이터 처리를 원할 경우 -> range(1, number_of_rows)
-        for row in range(1, 5):
+        for row in range(1, number_of_rows):
             print("processing " + str(count) + " th unit...")
             count += 1
             values = []
