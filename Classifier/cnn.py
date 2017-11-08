@@ -19,10 +19,17 @@ class ConvNet (nn.Module):
         def __init__(self,wordvector_size_input):
             input_channels = wordvector_size_input
             n_grams = 3 # must be odd number
-            hidden_channel_conv1 = 50
-            hidden_channel_conv2 = 10
-            hidden_layer_fc1 = 5
-            number_of_classes = 1
+            self.hidden_channel_conv1 = 50
+            self.hidden_channel_conv2 = 10
+            self.hidden_layer_fc1 = 5
+            self.number_of_classes = 1
+            self.output_vector_size = 60
+
+            hidden_channel_conv1 = self.hidden_channel_conv1
+            hidden_channel_conv2 = self.hidden_channel_conv2
+            hidden_layer_fc1 = self.hidden_layer_fc1
+            number_of_classes = self.number_of_classes
+            output_vector_size = self.output_vector_size
 
             super(ConvNet,self).__init__()
             self.conv1 = nn.Conv1d(input_channels,hidden_channel_conv1,n_grams,padding=((n_grams-1)//2 ))
@@ -34,31 +41,17 @@ class ConvNet (nn.Module):
             self.fc2 = nn.Linear(hidden_layer_fc1, number_of_classes)
 
         def forward(self,flow):
-            flow = flow.transpose(1,2)
+            flow = flow.transpose(1,2) # nbatches * height * nchannels -> nbatches * nchannels * height
             mini_batch_size_here = flow.data.shape[0]
-            wordvector_size_here = flow.data.shape[1]
             number_of_words_here = flow.data.shape[2]
-            hidden_channel_conv2 = 10
-            output_vector_size = 60
             flow = nn_func.relu(self.batch1(self.conv1(flow)))
-            #print(flow.data.shape)
             flow = nn_func.relu(self.batch2(self.conv2(flow)))
-            #flow = (torch.transpose(flow.data, 1, 2)).contiguous().view(-1,hidden_channel_conv2)
-            flow = flow.transpose(1, 2).contiguous().view(-1, hidden_channel_conv2) # Does contiguous preserve graph relations between variables?
-
-            #flow = flow.view(-1, self.num_flat_features(flow))
-            #print(flow.data.shape)
+            flow = flow.transpose(1, 2).contiguous().view(-1, self.hidden_channel_conv2) # Does contiguous preserve graph relations between variables?
             flow = nn_func.relu(self.fc1(flow))
-            #print(flow.data.shape)
             flow = nn_func.relu(self.fc2(flow))
-            print(flow.data.shape)
             flow = flow.view(mini_batch_size_here,number_of_words_here)
-            print(flow.data.shape)
-            variable_to_fixed_length_matrix = Variable(self.variable_to_fixed_length_matrix(number_of_words_here,output_vector_size))
-
-            uniform_dist_matrix = Variable(torch.ones(number_of_words_here,output_vector_size))
-            flow = torch.mm(flow ,uniform_dist_matrix)
-            print(flow.data.shape)
+            variable_to_fixed_length_matrix = Variable(self.variable_to_fixed_length_matrix(number_of_words_here,self.output_vector_size))
+            flow = torch.mm(flow ,variable_to_fixed_length_matrix)
             return flow
 
         def num_flat_features(self, x):
@@ -71,11 +64,12 @@ class ConvNet (nn.Module):
         def variable_to_fixed_length_matrix(self,row,column):
             output_np = np.zeros((row,column))
             for i in range(column):
-                index = i * row/column
+                index = (i+1) * row/(column )
                 index_floor = math.floor(index)
-                for j in range(index_floor):
+                for j in range(0,index_floor):
                     output_np[j][i] = 1
-                output_np[index_floor+1][i] = index - index_floor
+                if (index != index_floor):
+                    output_np[index_floor][i] = index - index_floor
             for k in range(row):
                 index = 0
                 flag = True
@@ -89,12 +83,11 @@ class ConvNet (nn.Module):
                 elif(output_np[k][index] < 1):
                     if(index+1 < column):
                         output_np[k][index+1] = 1- output_np[k][index]
-                        for l in range (index+2, column):
-                            output_np[k][l] = 0
+                        if(index+2 < column):
+                            for l in range (index+2, column):
+                                output_np[k][l] = 0
 
-            print(output_np)
-            print(torch.from_numpy(output_np))
-            return torch.from_numpy(output_np)
+            return torch.from_numpy(output_np).float()
 
 
 
@@ -212,3 +205,6 @@ class cnn_model :
             else:
                 minibatch_tensor = input
         return mini_batch_list
+
+cnn_1 = cnn_model(100)
+cnn_1.infer(Variable(torch.rand(1,36,100)))
