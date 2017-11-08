@@ -124,26 +124,14 @@ class NaiveBayesianDB(object):
 
 def initiate_naive_bayes_db():
     DB = NaiveBayesianDB()
-    f = open('./NaiveBayesDB.txt', 'wb')
-    pickle.dump(DB, f)
-    f.close()
+    return DB
 
 
 # all it takes to train is to renew DB
-def train_naive_bayes(FRlist):
-    f = open('./NaiveBayesDB.txt', 'rb')
-    DB = pickle.load(f)
-    f.close()
-
+def train_naive_bayes(FRlist, DB):
     DB.add_FRlist(FRlist)
-
-    f = open('./NaiveBayesDB.txt', 'wb')
-    pickle.dump(DB, f)
-    f.close()
 
 
 # all it takes to infer is to calculate based on DB
-def infer_naive_bayes(FRlist):
-    f = open('./NaiveBayesDB.txt', 'rb')
-    DB = pickle.load(f)
+def infer_naive_bayes(FRlist, DB):
     DB.naive_bayes_FRlist(FRlist)
