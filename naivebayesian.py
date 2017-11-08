@@ -2,6 +2,11 @@ import pickle
 import torch
 from torch.autograd import Variable
 
+""" sample use initiate_naive_bayes_db()
+train_naive_bayes(FRList)
+infer_naive_bayes(FRList)
+"""
+
 class SpamCount(object):
     def __init__(self):
         self.spam_count = 0
@@ -142,11 +147,3 @@ def infer_naive_bayes(FRlist):
     f = open('./NaiveBayesDB.txt', 'rb')
     DB = pickle.load(f)
     DB.naive_bayes_FRlist(FRlist)
-
-
-f = open('./savePR.txt', 'rb')
-PRList = pickle.load(f)
-f.close()
-
-train_naive_bayes(PRList)
-infer_naive_bayes(PRList)
