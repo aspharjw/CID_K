@@ -207,4 +207,4 @@ class cnn_model :
         return mini_batch_list
 
 cnn_1 = cnn_model(100)
-cnn_1.infer(Variable(torch.rand(1,36,100)))
+cnn_1.infer(Variable(torch.rand(1,1000,100)))
