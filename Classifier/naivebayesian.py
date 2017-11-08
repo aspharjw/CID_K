@@ -2,11 +2,6 @@ import pickle
 import torch
 from torch.autograd import Variable
 
-""" sample use initiate_naive_bayes_db()
-train_naive_bayes(FRList)
-infer_naive_bayes(FRList)
-"""
-
 class SpamCount(object):
     def __init__(self):
         self.spam_count = 0
@@ -83,6 +78,13 @@ class NaiveBayesianDB(object):
 
     # laplace estimation is set as default
     def naive_bayes(self, postaglist):
+        if self.total_ham == 0 & self.total_spam == 0 :
+            raise Exception('no training data')
+        elif self.total_ham == 0:
+            return 1
+        elif self.total_spam == 0:
+            return 0
+
         laplace = len(postaglist)
         # ratio_spam p = a/b , where a = p_spam, b = p_ham
         ratio_spam = self.p_spam()
@@ -120,18 +122,3 @@ class NaiveBayesianDB(object):
             it += 1
 
         return return_string
-
-
-def initiate_naive_bayes_db():
-    DB = NaiveBayesianDB()
-    return DB
-
-
-# all it takes to train is to renew DB
-def train_naive_bayes(FRlist, DB):
-    DB.add_FRlist(FRlist)
-
-
-# all it takes to infer is to calculate based on DB
-def infer_naive_bayes(FRlist, DB):
-    DB.naive_bayes_FRlist(FRlist)
