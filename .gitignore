@@ -47,3 +47,8 @@ Temporary Items
 */.ipynb_checkpoints/*
 .model
 *.npy
+.idea/CID_K.iml
+*.xml
+*.txt
+*.xlsx
+Preprocessor/models/namuwiki_testmodel_Komoran
