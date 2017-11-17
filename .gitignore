@@ -51,4 +51,5 @@ Temporary Items
 *.xml
 *.txt
 *.xlsx
+!Preprocessor/excel/오현석_17661_35317.xlsx
 Preprocessor/models/namuwiki_testmodel_Komoran
