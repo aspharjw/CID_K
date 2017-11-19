@@ -102,12 +102,11 @@ class NaiveBayesianDB(object):
 
     def naive_bayes_FRlist(self, FRlist):
         it = 0
-        v = Variable(torch.Tensor(len(FRlist), 1).zero_(), requires_grad=False)
+        v = Variable(torch.Tensor(len(FRlist), 1).zero_(), requires_grad=True)
         for FR in FRlist:
             v[it, 0] = self.naive_bayes(FR.context_bayes)
             it += 1
-
-        print(v)
+            
         return v
 
     def __str__(self):

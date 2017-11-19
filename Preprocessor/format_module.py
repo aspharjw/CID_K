@@ -157,14 +157,14 @@ class FormattedReview(object):
     attribute_num = 7
     def __init__(self, preprocessReview):
         
-        bookingReview = preprocessReview.db_node.val
+        self.bookingReview = preprocessReview.db_node.val
         
         self.context = preprocessReview.context_word2vec
         self.context_bayes = preprocessReview.context_postag
         self.calc_comp_similarity(preprocessReview)
         self.rate = preprocessReview.rate / 10
-        self.reiteration_context = self.calc_reiteration_context(bookingReview)
-        self.reiteration_repeat = self.calc_reiteration_repeat(bookingReview)
+        self.reiteration_context = self.calc_reiteration_context(self.bookingReview)
+        self.reiteration_repeat = self.calc_reiteration_repeat(self.bookingReview)
         self.post_time = preprocessReview.post_time % 1
         self.post_vip = (int(preprocessReview.post_time) % 7) / 7
         

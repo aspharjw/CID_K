@@ -45,7 +45,6 @@ class ConvNet (nn.Module):
             flow = nn_func.relu(self.batch1(self.conv1(flow)))
             flow = nn_func.relu(self.batch2(self.conv2(flow)))
 
-            print(flow)
             #reshape to [(minibatchsize * words) , -1] and process through fully connected layers
             flow = flow.transpose(1, 2).contiguous().view(-1, self.hidden_channel_conv2) # Does contiguous preserve graph relations between variables?
             flow = nn_func.relu(self.fc1(flow))

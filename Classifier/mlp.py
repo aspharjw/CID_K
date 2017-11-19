@@ -3,7 +3,6 @@ from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-import frdummy
 
 class mlp(nn.Module):
     def __init__(self, FR_attribute_size, prediction_context_size):
