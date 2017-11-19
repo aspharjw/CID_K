@@ -8,6 +8,7 @@ import torch.optim as optim
 import numpy as np
 import math
 class ConvNet (nn.Module):
+        output_vector_size = 60
         def __init__(self,wordvector_size_input):
 
             #hyperparameters
@@ -17,14 +18,13 @@ class ConvNet (nn.Module):
             self.hidden_channel_conv2 = 10
             self.hidden_layer_fc1 = 5
             self.number_of_classes = 1
-            self.output_vector_size = 60
+            self.output_vector_size = ConvNet.output_vector_size
 
             #making hyperparameters more understandable in this function
             hidden_channel_conv1 = self.hidden_channel_conv1
             hidden_channel_conv2 = self.hidden_channel_conv2
             hidden_layer_fc1 = self.hidden_layer_fc1
             number_of_classes = self.number_of_classes
-            output_vector_size = self.output_vector_size
 
             # network structure
             super(ConvNet,self).__init__()

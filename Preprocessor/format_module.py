@@ -154,6 +154,7 @@ class ReviewDB(object):
 
 class FormattedReview(object):
     reviewDB = None
+    attribute_num = 7
     def __init__(self, preprocessReview):
         
         bookingReview = preprocessReview.db_node.val
@@ -182,7 +183,7 @@ class FormattedReview(object):
         self.comp_similarity = max_sim
     
     def calc_reiteration_context(self, bookingReview, num = 1):
-        if num > 10:         # reiteration_context ÃÖ´ë ¼öÄ¡´Â 1
+        if num > 10:         # reiteration_context ìµœëŒ€ ìˆ˜ì¹˜ëŠ” 1
             return 0
         
         prev_review = bookingReview.db_node.previous_node(num)
@@ -191,10 +192,13 @@ class FormattedReview(object):
 
         prev_review = prev_review.val
         
-        if(prev_review.id == bookingReview.id     #¸®ºä¾î µ¿ÀÏ
-               and prev_review.context == bookingReview.context   #ÅØ½ºÆ® ³»¿ë µ¿ÀÏ
-               and bookingReview.post_time - prev_review.post_time < 30):   #ÇÑ´Þ ÀÌ³» ÀÛ¼º
+        if(prev_review.id == bookingReview.id     #ë¦¬ë·°ì–´ ë™ì¼
+               and prev_review.context == bookingReview.context   #í…ìŠ¤íŠ¸ ë‚´ìš© ë™ì¼
+               and bookingReview.post_time - prev_review.post_time < 30):   #í•œë‹¬ ì´ë‚´ ìž‘ì„±
             return 0.1 + self.calc_reiteration_context(bookingReview, num+1)
+        
+        else:
+            return 0
         
         
     def calc_reiteration_repeat(self, bookingReview, num = 1):     
@@ -204,15 +208,15 @@ class FormattedReview(object):
 
         prev_review = prev_review.val
         
-        if(prev_review.company == bookingReview.company      #¾÷Ã¼¸í µ¿ÀÏ
-               and prev_review.id == bookingReview.id):     #¸®ºä¾î µ¿ÀÏ
+        if(prev_review.company == bookingReview.company      #ì—…ì²´ëª… ë™ì¼
+               and prev_review.id == bookingReview.id):     #ë¦¬ë·°ì–´ ë™ì¼
             
             time_diff = bookingReview.post_time - prev_review.post_time
             
-            if(time_diff < 1): #ÇÏ·ç ÀÌ³» ÀÛ¼º
+            if(time_diff < 1): #í•˜ë£¨ ì´ë‚´ ìž‘ì„±
                 val = 0.1+self.calc_reiteration_repeat(bookingReview, num+1)
             
-            elif(time_diff < 365): #1³â ÀÌ³» ÀÛ¼º
+            elif(time_diff < 365): #1ë…„ ì´ë‚´ ìž‘ì„±
                 val = 0.1*time_diff/365+self.calc_reiteration_repeat(bookingReview, num+1)
             
             else:
@@ -222,6 +226,10 @@ class FormattedReview(object):
         
         else:
             return 0
+
+    def get_attribute(self):
+        return np.array([self.comp_similarity, self.rate, self.reiteration_context,
+                         self.reiteration_repeat, self.post_time, self.post_vip, self.id])
         
     @classmethod    
     def setDB(self, reviewDB):
