@@ -45,10 +45,11 @@ class ConvNet (nn.Module):
             flow = nn_func.relu(self.batch1(self.conv1(flow)))
             flow = nn_func.relu(self.batch2(self.conv2(flow)))
 
+            print(flow)
             #reshape to [(minibatchsize * words) , -1] and process through fully connected layers
             flow = flow.transpose(1, 2).contiguous().view(-1, self.hidden_channel_conv2) # Does contiguous preserve graph relations between variables?
             flow = nn_func.relu(self.fc1(flow))
-            flow = nn_func.relu(self.fc2(flow))
+            flow = self.fc2(flow)
 
             # reshape to [minibatchsize , -1] and make it to [minibatchsize , output_vector_size]
             flow = flow.view(mini_batch_size_here,number_of_words_here)
@@ -211,6 +212,9 @@ def cnn (formattedReviewList_input, cnn_model_input) :
 def Create_cnn_model (variable_input):
     wordvector_size_arg = variable_input.data.shape()[1]
     return cnn_model(wordvector_size_arg)
-cnn_1 = cnn_model(100)
-cnn_1.infer(Variable(torch.rand(1,1000,100)))
+
+cnn_1 = ConvNet(100)
+number_of_words = 60
+print(cnn_1.variable_to_fixed_length_matrix(number_of_words,cnn_1.output_vector_size))
+cnn_1.forward(Variable(torch.rand(1,number_of_words,100)))
 '''
