@@ -1,11 +1,3 @@
-def cnn (formattedReviewList_input, cnn_model_input) :
-    inference_cnn_numpy_array_list = cnn_model_input.infer(formattedReviewList_input)
-    return inference_cnn_numpy_array_list
-
-def Create_cnn_model (variable_input):
-    wordvector_size_arg = variable_input.data.shape()[1]
-    return cnn_model(wordvector_size_arg)
-
 from torch.autograd import Variable
 import torch
 import torch.utils.data
@@ -17,6 +9,8 @@ import numpy as np
 import math
 class ConvNet (nn.Module):
         def __init__(self,wordvector_size_input):
+
+            #hyperparameters
             input_channels = wordvector_size_input
             n_grams = 3 # must be odd number
             self.hidden_channel_conv1 = 50
@@ -25,12 +19,14 @@ class ConvNet (nn.Module):
             self.number_of_classes = 1
             self.output_vector_size = 60
 
+            #making hyperparameters more understandable in this function
             hidden_channel_conv1 = self.hidden_channel_conv1
             hidden_channel_conv2 = self.hidden_channel_conv2
             hidden_layer_fc1 = self.hidden_layer_fc1
             number_of_classes = self.number_of_classes
             output_vector_size = self.output_vector_size
 
+            # network structure
             super(ConvNet,self).__init__()
             self.conv1 = nn.Conv1d(input_channels,hidden_channel_conv1,n_grams,padding=((n_grams-1)//2 ))
             self.batch1 = nn.BatchNorm1d(hidden_channel_conv1)
@@ -41,14 +37,20 @@ class ConvNet (nn.Module):
             self.fc2 = nn.Linear(hidden_layer_fc1, number_of_classes)
 
         def forward(self,flow):
+
+            #process through convolutional layers
             flow = flow.transpose(1,2) # nbatches * height * nchannels -> nbatches * nchannels * height
             mini_batch_size_here = flow.data.shape[0]
             number_of_words_here = flow.data.shape[2]
             flow = nn_func.relu(self.batch1(self.conv1(flow)))
             flow = nn_func.relu(self.batch2(self.conv2(flow)))
+
+            #reshape to [(minibatchsize * words) , -1] and process through fully connected layers
             flow = flow.transpose(1, 2).contiguous().view(-1, self.hidden_channel_conv2) # Does contiguous preserve graph relations between variables?
             flow = nn_func.relu(self.fc1(flow))
             flow = nn_func.relu(self.fc2(flow))
+
+            # reshape to [minibatchsize , -1] and make it to [minibatchsize , output_vector_size]
             flow = flow.view(mini_batch_size_here,number_of_words_here)
             variable_to_fixed_length_matrix = Variable(self.variable_to_fixed_length_matrix(number_of_words_here,self.output_vector_size))
             flow = torch.mm(flow ,variable_to_fixed_length_matrix)
@@ -90,7 +92,7 @@ class ConvNet (nn.Module):
             return torch.from_numpy(output_np).float()
 
 
-
+''' Useless for now
 
 class cnn_model :
     def __init__(self,wordvector_size_input):
@@ -134,7 +136,6 @@ class cnn_model :
         for epoch in range(number_of_loops_over_dataset):  # loop over the dataset multiple times
             running_loss = 0.0
             for i, train_data in enumerate(trainloader, 0):
-                '''
                 # get the inputs
                 context_zeropadded = np.zeros([max_words_for_string, wordvector_size])
                 if (formattedReview.context.shape[0] > 0):
@@ -142,7 +143,6 @@ class cnn_model :
                     :formattedReview.context.shape[1]] = formattedReview.context
                 input = torch.unsqueeze(torch.transpose(torch.from_numpy(context_zeropadded).float(), 0, 1), 0)
                 label = torch.FloatTensor([int(formattedReview.label)])
-                '''
                 #get the inputs
                 input, label = train_data
                 # wrap them in Variable
@@ -168,7 +168,6 @@ class cnn_model :
         print('Finished Training')
 
     def infer(self, minibatch_variable_input):
-        '''
         minibatch_size = 20
         minibatch_tensor_list = self.mini_batch_from_formattedReview(minibatch_size,formattedReviewList_input)
         output_list = []
@@ -178,7 +177,6 @@ class cnn_model :
             output_numpy_array = output.data.numpy().reshape((minibatch_size))
             output_list.append(output_numpy_array)
         print(output_list)
-        '''
         output = self.net(minibatch_variable_input)
         #print(output)
         return output
@@ -206,5 +204,13 @@ class cnn_model :
                 minibatch_tensor = input
         return mini_batch_list
 
+def cnn (formattedReviewList_input, cnn_model_input) :
+    inference_cnn_numpy_array_list = cnn_model_input.infer(formattedReviewList_input)
+    return inference_cnn_numpy_array_list
+
+def Create_cnn_model (variable_input):
+    wordvector_size_arg = variable_input.data.shape()[1]
+    return cnn_model(wordvector_size_arg)
 cnn_1 = cnn_model(100)
 cnn_1.infer(Variable(torch.rand(1,1000,100)))
+'''
