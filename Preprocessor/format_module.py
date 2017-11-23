@@ -98,7 +98,7 @@ class ReviewTree:
         string = string + node.__str__() + '\n'
         
         if node.rightChild is not None:
-            string = string + self.to_str(node.rightcompanyChild)
+            string = string + self.to_str(node.rightChild)
         
         return string
 
