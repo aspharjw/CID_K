@@ -45,7 +45,7 @@ max_iter = 10
 verbose = True
 keywords, rank, graph = kr_wordrank.extract(textlist, beta, max_iter, verbose)
 
-f = open('./krwordrank_data.pkl', 'wb')
+f = open('./pkl/krwordrank_data.pkl', 'wb')
 pickle.dump(keywords, f)
 f.close()
 

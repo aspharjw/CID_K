@@ -19,7 +19,7 @@ class Postag:
         self.normalize_reg = re.compile(normalize_reg_pattern)
         self.regex_tokenizer = RegexTokenizer()
         self.duplicate_reg_pattern = '(([^.])\\2+)'
-        f = open('./krwordrank_data.pkl', 'rb')
+        f = open('./pkl/krwordrank_data.pkl', 'rb')
         scores = pickle.load(f)
         f.close()
         self.maxscore_tokenizer = MaxScoreTokenizer(scores=scores)

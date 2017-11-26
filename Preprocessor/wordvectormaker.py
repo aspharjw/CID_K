@@ -4,7 +4,7 @@ from konlpy.tag import _komoran as Komoran
 #from postag import Postag
 from stemming import stemming_and_normalizing_word
 
-postagger_jw = Komoran()
+postagger_jw = Komoran.Komoran()
 
 def word_part_of_word_slash_tag (word):
     word_slash_tag = re.findall(r"[\w']+|[/]",  word)
@@ -14,7 +14,7 @@ def word_part_of_word_slash_tag (word):
 def postag_and_reformat_wordlist (word_list):
     postag_tuple_list = []
     for word in word_list:
-        postag_tuple_list = postag_tuple_list + postagger_jw.postag_komoran(word)# Trust that this postagger correctly outputs list of tuples of (text, tag)
+        postag_tuple_list = postag_tuple_list + postagger_jw.pos(word)# Trust that this postagger correctly outputs list of tuples of (text, tag)
 
     output = []
     for tup in postag_tuple_list:
@@ -42,6 +42,7 @@ def wordlist_to_wordvec_list (word2vec_model_input, wordlist_iterator):
             word2vec_output = word2vec_output + wordvectorlist_retry
 
             # notin vocab printer
+            '''
             print()
             #print("tokenized : ", end='')
             #print(cohesiontokenized_word_part)
@@ -51,6 +52,7 @@ def wordlist_to_wordvec_list (word2vec_model_input, wordlist_iterator):
             print(postagged_tokens_list_of_word)
             print(word + " not in vocabulary so replaced to " , end='')
             print((wordlist_retry))
+            '''
 
     word2vec_output = np.array(word2vec_output)
     return word2vec_output
