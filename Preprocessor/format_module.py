@@ -93,7 +93,7 @@ class LinkedList:
 
 class ReviewDB(object):
     def __init__(self, name):
-        self.review_db = Base("./pkl/" + name + "_DB.pdl")
+        self.review_db = Base(name + "_DB.pdl")
         self.review_dict = {}
         
         if self.review_db.exists():
@@ -159,7 +159,7 @@ class ReviewDB(object):
             id_dict[id][0] += accumulate
             id_dict[id][1] += 1
         else:
-            id_dict[id] = (accumulate, 1)
+            id_dict[id] = [accumulate, 1]
             
     def save_db(self):
         self.review_db.commit()
