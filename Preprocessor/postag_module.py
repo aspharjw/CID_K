@@ -25,7 +25,7 @@ def komoran(BRList):
 
         PR = PreprocessReview(flat_company_postag, None, flat_context_postag, None,
                                 BR.id, BR.rate, BR.post_time, BR.label,
-                                BR.review_id, BR.db_node)
+                                BR.review_id)
         PRList.append(PR)
 
     return PRList
@@ -54,7 +54,7 @@ def twitter(BRList):
 
         PR = PreprocessReview(flat_company_postag, None, flat_context_postag, None,
                                 BR.id, BR.rate, BR.post_time, BR.label,
-                                BR.review_id, BR.db_node)
+                                BR.review_id)
         PRList.append(PR)
 
     return PRList

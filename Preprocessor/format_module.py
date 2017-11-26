@@ -2,154 +2,173 @@ import numpy as np
 from scipy import spatial
 import bookingreview
 import preprocessreview
+from pydblite import Base
 
 
 class ReviewNode:
-    def __init__(self, val, parent):
-        self.val = val
-        self.leftChild = None
-        self.rightChild = None
-        self.parent = parent
+    def __init__(self, data, prev=None, next=None):
+        self.data = data
+        self.prev = prev
+        self.next = next
         
-        val.db_node = self
-    
     def get(self):
-        return self.val
+        return self.data
     
     def set(self, val):
-        self.val = val
-        
-    def max_value(self):
-        current = self
-        
-        while(current is not None):
-            if current.rightChild is None:
-                break
-            current = current.rightChild
-            
-        return current
-    
+        self.data = val
+  
     def previous_node(self, num = 1):
         if(num == 0):
             return self
         
-        if self.leftChild is not None:
-            return self.leftChild.max_value().previous_node(num-1)
-        
-        n = self
-        p = self.parent
-        while(p is not None):
-            if n != p.leftChild:
-                break
-            n = p
-            p = p.parent
-            
-        if p is None:
-            return None
-        
-        return p.previous_node(num-1)
+        return self.prev.previous_node(num-1)
 
     def __str__(self):     
-        return "ReviewNode - "+self.val.__str__() + '\n'
+        return "ReviewNode - "+self.data.__str__() + '\n'
     
         
-class ReviewTree:
+class LinkedList:
     def __init__(self):
         self.root = None
+        self.size = 0
 
     def set_root(self, val):
-        self.root = ReviewNode(val, None)
+        self.root = ReviewNode(val)
+        self.root.prev = self.root
+        self.root.next = self.root
+        self.size = 1
 
-    def insert(self, val):
-        if(self.root is None):
+    def insert_after(self, val, prev):
+        if (prev is None) or self.size == 0:
+            self.set_root(val)
+           
+        else:
+            inserted = ReviewNode(val, prev, prev.next)
+            prev.next.prev = inserted
+            prev.next = inserted
+            self.size += 1
+            
+    def insert_tail(self, val):
+        if self.size == 0:
             self.set_root(val)
         else:
-            self.insert_node(self.root, val)
+            self.insert_after(val, self.root.prev)
 
-    def insert_node(self, currentNode, val):
-        current = currentNode
+    def to_list(self, get_node = False):
+        if self.root is None:
+            return []
         
-        while(True):
-            if(val < current.val):
-                if(current.leftChild != None):
-                    current = current.leftChild
-                else:
-                    current.leftChild = ReviewNode(val, currentNode)
-                    break
-            else:
-                if(current.rightChild != None):
-                    current = current.rightChild
-                else:
-                    current.rightChild = ReviewNode(val, currentNode)
-                    break
+        if get_node: ret = [self.root]
+        else: ret = [self.root.data]
+            
+        temp = self.root.next
+        for i in range(1, self.size):
+            if get_node: ret.append(temp)
+            else: ret.append(temp.data)
+            temp = temp.next
+        
+        return ret
+
+    @classmethod
+    def list_to_linked(cls, arg):
+        ret = LinkedList()
+        for val in arg:
+            ret.insert_tail(val)
+            
+        return ret
                 
                 
     def __str__(self):
         if self.root is None:
             return "empty"
         
-        return self.to_str(self.root)
-    
-    def to_str(self, node):
-        string = ""
-        if node.leftChild is not None:
-            string = string + self.to_str(node.leftChild)
-        
-        string = string + node.__str__() + '\n'
-        
-        if node.rightChild is not None:
-            string = string + self.to_str(node.rightChild)
+        string = self.root.__str__()+ '\n'
+        temp = self.root.next
+        while (temp is not self.root):
+            string = string + temp.__str__() + '\n'
+            temp = temp.next
         
         return string
 
 
-
 class ReviewDB(object):
-    def __init__(self):
+    def __init__(self, name):
+        self.review_db = Base("./pkl/" + name + "_DB.pdl")
         self.review_dict = {}
-        self.review_tree = ReviewTree()
-        self.id_dict = {}
+        
+        if self.review_db.exists():
+            self.review_db.open()
+            self.set_review_dict(self.review_db[0]['review_list'])
+            
+        else:
+            self.review_db.create('review_list', 'id_dict')
+            self.review_db.insert([], {})
+            self.save_db()
+    
+    def set_review_dict(self, review_list):
+        self.review_dict = {}
+        linked_list = LinkedList.list_to_linked(review_list)
+        for review_node in linked_list.to_list(get_node = True):
+            self.review_dict[review_node.data.review_id] = review_node
     
     def add_review_list(self, bookingReview_list):
+        temp_list = list()
         for review in bookingReview_list:
             if not (review.review_id in self.review_dict):
-                self.review_dict[review.review_id] = review
-                self.review_tree.insert(review)
-                
-                #if not (review.id in self.id_dict):
-                #    self.id_dict[review.id] = len(self.id_dict)
-                
-    def add_review(self, bookingReview):
-        if not (bookingReview.review_id in self.review_dict):
-            self.review_dict[bookingReview.review_id] = bookingReview
-            self.review_tree.insert(bookingReview)      
+                temp_list.append(review)
+             
+        temp_list.sort()
+        prev_list = self.review_db[0]['review_list']
+            
+        from heapq import merge
+        merged_list = list(merge(temp_list, prev_list))
+        self.review_db[0]['review_list'] = merged_list
+                    
+        self.set_review_dict(merged_list)
+       
+            
+        self.review_db.commit()
         
-    def get_review(self, review_id):
+    '''
+    def add_review(self, bookingReview):
+        if not (bookingReview.review_id in self.review_db[0]['review_dict']):
+            self.review_db[0]['review_dict'][bookingReview.review_id] = bookingReview
+            self.review_db[0]['tree'].insert(bookingReview)      
+            
+        self.save_db()
+    '''
+        
+    def get_review_node(self, review_id):
         if (review_id in self.review_dict):
             return self.review_dict[review_id]
         
     def get_id_spamRecord (self, id):
-        if (id in self.id_dict):
-            return (self.id_dict[id][0]/self.id_dict[id][1])
+        id_dict = self.review_db[0]['id_dict']
+        if (id in id_dict):
+            return (id_dict[id][0]/id_dict[id][1])
         else:
             return 0.0
     
     def add_spam_result (self, id, result):
+        id_dict = self.review_db[0]['id_dict']
         accumulate = 0
         if result:
             accumulate = 1
             
-        if (id in self.id_dict):
-            self.id_dict[id][0] += accumulate
-            self.id_dict[id][1] += 1
+        if (id in id_dict):
+            id_dict[id][0] += accumulate
+            id_dict[id][1] += 1
         else:
-            self.id_dict[id] = (accumulate, 1)
+            id_dict[id] = (accumulate, 1)
+            
+    def save_db(self):
+        self.review_db.commit()
                 
     def size(self):
-        return len(self.review_dict)
+        return len(self.review_db[0]['review_list'])
     
     def __str__(self):
-        return self.review_tree.__str__()
+        return "reviewDB __str__ : unimplemented"
 
 
 class FormattedReview(object):
@@ -157,21 +176,21 @@ class FormattedReview(object):
     attribute_num = 7
     def __init__(self, preprocessReview):
         
-        self.bookingReview = preprocessReview.db_node.val
+        self.label = preprocessReview.label
+        self.review_id = preprocessReview.review_id
+        
+        self.bookingReview = FormattedReview.reviewDB.get_review_node(self.review_id).data
         
         self.context = preprocessReview.context_word2vec
         self.context_bayes = preprocessReview.context_postag
         self.calc_comp_similarity(preprocessReview)
         self.rate = preprocessReview.rate / 10
-        self.reiteration_context = self.calc_reiteration_context(self.bookingReview)
-        self.reiteration_repeat = self.calc_reiteration_repeat(self.bookingReview)
+        self.reiteration_context = self.calc_reiteration_context()
+        self.reiteration_repeat = self.calc_reiteration_repeat()
         self.post_time = preprocessReview.post_time % 1
         self.post_vip = (int(preprocessReview.post_time) % 7) / 7
         
         self.id = self.reviewDB.get_id_spamRecord(preprocessReview.id)
-        
-        self.label = preprocessReview.label
-        self.review_id = preprocessReview.review_id
     
     def calc_comp_similarity(self, preprocessReview):
         max_sim = -1;
@@ -182,42 +201,42 @@ class FormattedReview(object):
         
         self.comp_similarity = max_sim
     
-    def calc_reiteration_context(self, bookingReview, num = 1):
+    def calc_reiteration_context(self, num = 1):
         if num > 10:         # reiteration_context 최대 수치는 1
             return 0
         
-        prev_review = bookingReview.db_node.previous_node(num)
-        if prev_review is None:
+        prev_review_node = FormattedReview.reviewDB.get_review_node(self.review_id).previous_node(num)
+        if prev_review_node is None:
             return 0
 
-        prev_review = prev_review.val
+        prev_review = prev_review_node.data
         
-        if(prev_review.id == bookingReview.id     #리뷰어 동일
-               and prev_review.context == bookingReview.context   #텍스트 내용 동일
-               and bookingReview.post_time - prev_review.post_time < 30):   #한달 이내 작성
-            return 0.1 + self.calc_reiteration_context(bookingReview, num+1)
+        if(prev_review.id == self.bookingReview.id     #리뷰어 동일
+               and prev_review.context == self.bookingReview.context   #텍스트 내용 동일
+               and self.bookingReview.post_time - prev_review.post_time < 30):   #한달 이내 작성
+            return 0.1 + self.calc_reiteration_context(num+1)
         
         else:
             return 0
         
         
-    def calc_reiteration_repeat(self, bookingReview, num = 1):     
-        prev_review = bookingReview.db_node.previous_node(num)
-        if prev_review is None:
+    def calc_reiteration_repeat(self, num = 1):     
+        prev_review_node = FormattedReview.reviewDB.get_review_node(self.review_id).previous_node(num)
+        if prev_review_node is None:
             return 0
 
-        prev_review = prev_review.val
+        prev_review = prev_review_node.data
         
-        if(prev_review.company == bookingReview.company      #업체명 동일
-               and prev_review.id == bookingReview.id):     #리뷰어 동일
+        if(prev_review.company == self.bookingReview.company      #업체명 동일
+               and prev_review.id == self.bookingReview.id):     #리뷰어 동일
             
-            time_diff = bookingReview.post_time - prev_review.post_time
+            time_diff = self.bookingReview.post_time - prev_review.post_time
             
             if(time_diff < 1): #하루 이내 작성
-                val = 0.1+self.calc_reiteration_repeat(bookingReview, num+1)
+                val = 0.1+self.calc_reiteration_repeat(num+1)
             
             elif(time_diff < 365): #1년 이내 작성
-                val = 0.1*time_diff/365+self.calc_reiteration_repeat(bookingReview, num+1)
+                val = 0.1*time_diff/365+self.calc_reiteration_repeat(num+1)
             
             else:
                 val = 0.1

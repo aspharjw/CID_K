@@ -1,6 +1,6 @@
 class PreprocessReview(object):
     def __init__(self, company_postag, company_word2vec, context_postag, context_word2vec,
-                 id, rate, post_time, label, review_id, db_node):
+                 id, rate, post_time, label, review_id):
         self.company_postag = company_postag
         self.company_word2vec = company_word2vec
         self.context_postag = context_postag
@@ -10,7 +10,6 @@ class PreprocessReview(object):
         self.post_time = post_time
         self.label = label
         self.review_id = review_id
-        self.db_node = db_node
 
     def __str__(self):
         return ("PreprocessReview object:\n"

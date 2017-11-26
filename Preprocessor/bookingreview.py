@@ -8,7 +8,6 @@ class BookingReview(object):
         self.post_time = post_time
         self.label = label
         self.review_id = review_id
-        self.db_node = None
 
     def __str__(self):
         return ("BookingReview object:\n"
