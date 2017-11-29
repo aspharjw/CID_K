@@ -13,10 +13,11 @@ class mlp(nn.Module):
         self.output_channels = 1
         super(mlp, self).__init__()
         self.fc1 = nn.Linear(self.input_channels, self.hidden_layer_fc1)
+        self.fc1_bn = nn.BatchNorm1d(self.hidden_layer_fc1)
         self.fc2 = nn.Linear(self.hidden_layer_fc1, self.output_channels)
 
     def forward(self, flow):
-        flow = F.relu(self.fc1(flow))
+        flow = F.relu(self.fc1_bn(self.fc1(flow)))
         flow = self.fc2(flow)
         return flow
 
