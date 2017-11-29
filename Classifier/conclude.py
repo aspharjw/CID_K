@@ -16,13 +16,16 @@ class conclude(nn.Module):
         self.fc1 = nn.Linear(self.number_of_classifiers,self.number_of_conclusions)
 
     def forward(self,flow):
-        output_minftoinf = nn_func.relu(self.fc1(flow))
+        output_minftoinf = self.fc1(flow)
         output_0to1 = torch.nn.functional.sigmoid(output_minftoinf)
         output_tuple = torch.cat([1- output_0to1, output_0to1],1)
         return output_tuple
 
     def bind(self, rnn_input, cnn_input, nb_input):
         return torch.cat([rnn_input,cnn_input,nb_input],1)
+    
+    def get_contribution(self):
+        return (self.fc1.weight, self.fc1.bias)
         
 
 """conclude_ex = conclude()
