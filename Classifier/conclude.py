@@ -14,6 +14,8 @@ class conclude(nn.Module):
         self.number_of_conclusions = 1
         super(conclude,self).__init__()
         self.fc1 = nn.Linear(self.number_of_classifiers,self.number_of_conclusions)
+        self.fc1.weight = nn.Parameter(torch.FloatTensor([[0.333333, 0.333333, 0.333333]]))
+        self.fc1.bias = nn.Parameter(torch.FloatTensor([[0]]))
 
     def forward(self,flow):
         output_minftoinf = self.fc1(flow)
