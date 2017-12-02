@@ -3,10 +3,10 @@ import json
 import sys
 import pickle
 sys.path.append('./soy/')
-from Preprocessor.soy.soy.nlp.hangle import normalize
-from Preprocessor.soy.soy.nlp.extractors import KR_WordRank
+from soy.nlp.hangle import normalize
+from soy.nlp.extractors import KR_WordRank
 from xlrd import open_workbook
-from Preprocessor.soy.soy.nlp.hangle import normalize
+from soy.nlp.hangle import normalize
 
 file_dir = 'Commonreviews_snuproject.xlsx'
 
