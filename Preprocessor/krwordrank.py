@@ -6,7 +6,7 @@ sys.path.append('./soy/')
 from soy.nlp.hangle import normalize
 from soy.nlp.extractors import KR_WordRank
 from xlrd import open_workbook
-from Preprocessor.soy.soy.nlp.hangle import normalize
+from soy.nlp.hangle import normalize
 
 file_dir = 'Commonreviews_snuproject.xlsx'
 
