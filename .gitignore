@@ -1,4 +1,4 @@
-# Windows image file caches
+﻿# Windows image file caches
 Thumbs.db
 ehthumbs.db
 
@@ -50,8 +50,8 @@ Temporary Items
 .idea/CID_K.iml
 *.xml
 *.txt
-*.xlsx
 !Preprocessor/excel/오현석_17661_35317.xlsx
 Preprocessor/models/namuwiki_testmodel_Komoran
 *.pkl
-*.pkl
+*.mdl
+Preprocessor/excel/Commonreviews_snuproject.xlsx
