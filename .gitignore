@@ -57,3 +57,5 @@ Preprocessor/models/namuwiki_testmodel_Komoran
 Preprocessor/excel/Commonreviews_snuproject.xlsx
 *.pdl
 *.pyc
+*.cmbl
+Classifier/results/loss.xlsx

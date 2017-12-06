@@ -1,7 +1,7 @@
 from konlpy.tag import *
 import sys
 import re
-sys.path.append('../Preprocessor/soy/')
+sys.path.append('./soy/')
 from soy.nlp.tokenizer import RegexTokenizer, LTokenizer, MaxScoreTokenizer
 import pickle
 
@@ -19,7 +19,9 @@ class Postag:
         self.normalize_reg = re.compile(normalize_reg_pattern)
         self.regex_tokenizer = RegexTokenizer()
         self.duplicate_reg_pattern = '(([^.])\\2+)'
-        f = open('../Preprocessor/pkl/krwordrank_data.pkl', 'rb')
+        try: f = open('./pkl/krwordrank_data.pkl', 'rb')
+        except FileNotFoundError:
+            f = open('./Preprocessor/pkl/krwordrank_data.pkl', 'rb')
         scores = pickle.load(f)
         f.close()
         self.maxscore_tokenizer = MaxScoreTokenizer(scores=scores)
