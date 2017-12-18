@@ -186,9 +186,9 @@ class FormattedReview(object):
         self.calc_comp_similarity(preprocessReview)
         
         if preprocessReview.rate == 0:
-            self.rate = preprocessReview.rate / 10
-        else:
             self.rate = 1.0
+        else:
+            self.rate = preprocessReview.rate / 10
                 
         self.reiteration_context = self.calc_reiteration_context()
         self.reiteration_repeat = self.calc_reiteration_repeat()
