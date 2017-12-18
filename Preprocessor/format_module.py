@@ -184,13 +184,19 @@ class FormattedReview(object):
         self.context = preprocessReview.context_word2vec
         self.context_bayes = preprocessReview.context_postag
         self.calc_comp_similarity(preprocessReview)
-        self.rate = preprocessReview.rate / 10
+        
+        if preprocessReview.rate == 0:
+            self.rate = preprocessReview.rate / 10
+        else:
+            self.rate = 1.0
+                
         self.reiteration_context = self.calc_reiteration_context()
         self.reiteration_repeat = self.calc_reiteration_repeat()
         self.post_time = preprocessReview.post_time % 1
         self.post_vip = (int(preprocessReview.post_time) % 7) / 7
         
         self.id = self.reviewDB.get_id_spamRecord(preprocessReview.id)
+        self.reviewDB.add_spam_result(preprocessReview.id, self.label)
     
     def calc_comp_similarity(self, preprocessReview):
         max_sim = -1;
@@ -236,10 +242,10 @@ class FormattedReview(object):
                 val = 0.1+self.calc_reiteration_repeat(num+1)
             
             elif(time_diff < 365): #1년 이내 작성
-                val = 0.1*time_diff/365+self.calc_reiteration_repeat(num+1)
+                val = 0.1*(365-time_diff)/365+self.calc_reiteration_repeat(num+1)
             
             else:
-                val = 0.1
+                val = 0.0
                 
             return val if val<1.0 else 1.0
         
