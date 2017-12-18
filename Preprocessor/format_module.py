@@ -202,7 +202,7 @@ class FormattedReview(object):
         max_sim = -1;
         for company_vec in preprocessReview.company_word2vec:
             for context_vec in preprocessReview.context_word2vec:
-                cos_sim = 1 - spatial.distance.cosine(company_vec, context_vec)
+                cos_sim = spatial.distance.cosine(company_vec, context_vec)
                 max_sim = max_sim if (max_sim > cos_sim) else cos_sim
         
         self.comp_similarity = max_sim
