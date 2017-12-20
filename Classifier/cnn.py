@@ -14,15 +14,17 @@ class ConvNet (nn.Module):
             #hyperparameters
             input_channels = wordvector_size_input
             n_grams = 3 # must be odd number
-            self.hidden_channel_conv1 = 50
-            self.hidden_channel_conv2 = 10
-            self.hidden_layer_fc1 = 5
+            self.hidden_channel_conv1 = 25
+            self.hidden_channel_conv2 = 25
+            self.hidden_channel_conv3 = 25
+            self.hidden_layer_fc1 = 30
             self.number_of_classes = 1
             self.output_vector_size = ConvNet.output_vector_size
 
             #making hyperparameters more understandable in this function
             hidden_channel_conv1 = self.hidden_channel_conv1
             hidden_channel_conv2 = self.hidden_channel_conv2
+            hidden_channel_conv3 = self.hidden_channel_conv3
             hidden_layer_fc1 = self.hidden_layer_fc1
             number_of_classes = self.number_of_classes
 
@@ -32,8 +34,10 @@ class ConvNet (nn.Module):
             self.batch1 = nn.BatchNorm1d(hidden_channel_conv1)
             self.conv2 = nn.Conv1d(hidden_channel_conv1,hidden_channel_conv2,n_grams,padding=((n_grams-1)//2))
             self.batch2 = nn.BatchNorm1d(hidden_channel_conv2)
+            self.conv3 = nn.Conv1d(hidden_channel_conv2,hidden_channel_conv3,n_grams,padding=((n_grams-1)//2))
+            self.batch3 = nn.BatchNorm1d(hidden_channel_conv3)
 
-            self.fc1 = nn.Linear(hidden_channel_conv2 , hidden_layer_fc1)
+            self.fc1 = nn.Linear(hidden_channel_conv3 , hidden_layer_fc1)
             self.fc2 = nn.Linear(hidden_layer_fc1, number_of_classes)
 
         def forward(self,flow):
@@ -44,9 +48,10 @@ class ConvNet (nn.Module):
             number_of_words_here = flow.data.shape[2]
             flow = nn_func.relu(self.batch1(self.conv1(flow)))
             flow = nn_func.relu(self.batch2(self.conv2(flow)))
+            flow = nn_func.relu(self.batch3(self.conv3(flow)))
 
             #reshape to [(minibatchsize * words) , -1] and process through fully connected layers
-            flow = flow.transpose(1, 2).contiguous().view(-1, self.hidden_channel_conv2) # Does contiguous preserve graph relations between variables?
+            flow = flow.transpose(1, 2).contiguous().view(-1, self.hidden_channel_conv3) # Does contiguous preserve graph relations between variables?
             flow = nn_func.relu(self.fc1(flow))
             flow = self.fc2(flow)
 
@@ -54,6 +59,7 @@ class ConvNet (nn.Module):
             flow = flow.view(mini_batch_size_here,number_of_words_here)
             variable_to_fixed_length_matrix = Variable(self.variable_to_fixed_length_matrix(number_of_words_here,self.output_vector_size))
             flow = torch.mm(flow ,variable_to_fixed_length_matrix)
+            flow = flow * (self.output_vector_size/number_of_words_here)
             return flow
 
         def num_flat_features(self, x):
