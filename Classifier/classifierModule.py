@@ -15,9 +15,20 @@ import naivebayesian
 import cnn
 import conclude
 import mlp
+import convert_to_excel
+
+import pickle
+
+def save_object(obj, filename):
+    with open(filename, 'wb') as output:
+        pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
+
+def load_object(filename):
+    with open(filename, 'rb') as input:
+        return pickle.load(input)
 
 class classifierModule(nn.Module):
-    def __init__(self, input_size, batch_size, FRlist, path, refresh = False):
+    def __init__(self, input_size, batch_size, path, refresh = False):
         super(classifierModule, self).__init__()
         self.batch_size = batch_size
         self.input_size = input_size
@@ -36,7 +47,19 @@ class classifierModule(nn.Module):
         
         self.conclude = conclude.conclude()
         
-        self.nb_model.add_FRlist(FRlist) #initialize nb database
+        self.nb_path = "./models/nb_db.pkl"
+        if os.path.exists(self.nb_path):
+            self.nb_model = load_object(self.nb_path)
+        elif os.path.exists("./Classifier/models/nb_db.pkl"):
+            self.nb_path = "./Classifier/models/nb_db.pkl"
+            self.nb_model = load_object(self.nb_path)
+        else:
+            try:
+                FRlist = load_object("../Preprocessor/pkl/save_formatted_review_train.pkl")
+            except FileNotFoundError:
+                FRlist = load_object("./Preprocessor/pkl/save_formatted_review_train.pkl")
+            self.nb_model.add_FRlist(FRlist) #initialize nb database
+            save_object(self.nb_model, self.nb_path)
         
         self.path = path
         
@@ -48,6 +71,8 @@ class classifierModule(nn.Module):
         
     def save_state_dict(self):
         torch.save(self.state_dict(), self.path)
+        save_object(self.nb_model, self.nb_path)
+        
         
     def encoder(self, formattedList):
         length = len(formattedList)
@@ -130,11 +155,21 @@ class classifierModule(nn.Module):
         print("-------------------------------------------------------------\n")
         
         
-learning_rate = 0.005
+learning_rate = 0.0013
 input_size = 100  # word2vec k size
-batch_size = 100
-n_epochs = 40
-criterion = nn.CrossEntropyLoss(torch.FloatTensor([1,6]))
+batch_size = 800
+n_epochs = 1000
+
+try:
+    reviewDB = format_module.ReviewDB("../Preprocessor/pkl/train_1to1")
+    model = classifierModule(input_size, batch_size, "./models/final_39.mdl")
+except FileNotFoundError:
+    reviewDB = format_module.ReviewDB("./Preprocessor/pkl/train_1to1")
+    model = classifierModule(input_size, batch_size, "./Classifier/models/final_39.mdl")
+    
+format_module.FormattedReview.setDB(reviewDB)
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 # target이 0일 때, p가 1-s보다 작으면 +1
 # target이 1일 때, p가 1-s보다 크면 +1
@@ -170,12 +205,8 @@ def get_targets(input, model, out = [1, 0]):
 def get_prediction(outputs, sensitivity):
     return np.ceil(outputs.data[:, 1]+sensitivity-1+0.000000001)
 
-def train_net(train_list, validation_list, model, reviewDB, sensitivity = 0.5, run_mode = "default"):
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+def train_net(train_list, validation_list, sensitivity = 0.5, run_mode = "default"):
     batch_list = model.resize_input(train_list)
-    
-    for input in train_list:
-        reviewDB.add_spam_result(input.bookingReview.id, input.label)
     
     for epoch in range(n_epochs):
         time_1 = time.time()
@@ -185,9 +216,11 @@ def train_net(train_list, validation_list, model, reviewDB, sensitivity = 0.5, r
 
         for bl in batch_list:
             outputs = model(bl, mode = run_mode)
+            #targets_ = get_targets(bl, model, [1, -1])
             targets = get_targets(bl, model)
 
-            optimizer.zero_grad()
+            
+            optimizer.zero_grad()    
             loss = criterion(outputs, targets)
             loss.backward()
             optimizer.step()
@@ -200,19 +233,9 @@ def train_net(train_list, validation_list, model, reviewDB, sensitivity = 0.5, r
         
         v_outputs = model(validation_list, mode = run_mode)
         v_targets = get_targets(validation_list, model)
+        #v_targets_ = get_targets(validation_list, model, [1, -1])
         vacc = get_accuracy(v_outputs, v_targets, sensitivity) / len(validation_list)
         v_loss = criterion(v_outputs, v_targets)
-    
-        '''
-        print("epoch{:>3}: train acc {:.6f} | validation acc {:.6f}" 
-              .format(epoch, tacc_list[-1][0], vacc_list[-1][0]))
-        print("----- train ham acc {:.6f} | train spam acc {:.6f}"
-              .format( tacc_list[-1][2]/(tacc_list[-1][2]+tacc_list[-1][3]), tacc_list[-1][1]/(tacc_list[-1][1]+tacc_list[-1][4])))
-        print("-validation ham acc {:.6f} | vldtn spam acc {:.6f}"
-              .format( vacc_list[-1][2]/(vacc_list[-1][2]+vacc_list[-1][3]), vacc_list[-1][1]/(vacc_list[-1][1]+vacc_list[-1][4])))
-        print("------- loss.data   {:.6f} | v_loss.data    {:.6f}\n"
-              .format(loss.data[0], v_loss.data[0]))
-        '''
         
         f1_train = 0.0
         f1_val = 0.0
@@ -221,11 +244,9 @@ def train_net(train_list, validation_list, model, reviewDB, sensitivity = 0.5, r
         
         print("epoch{:>3}: {} s" .format(epoch, time_2-time_1) )
         print("--------- train_acc {:.6f} | ham_acc {:.6f} | spam_acc {:.6f} | f1_score {:.6f} | loss.data {:.6f}"
-             .format(tacc[0], tacc[2]/(tacc[2]+tacc[3]), tacc[1]/(tacc[1]+tacc[4]),
-                     2/( 1 + ((1-tacc[2])/tacc[1]) ), loss.data[0]) )
+             .format(tacc[0], tacc[2]/(tacc[2]+tacc[3]), tacc[1]/(tacc[1]+tacc[4]), f1_train, loss.data[0]) )
         print("---- validation_acc {:.6f} | ham_acc {:.6f} | spam_acc {:.6f} | f1_score {:.6f} | loss.data {:.6f}"
-             .format(vacc[0], vacc[2]/(vacc[2]+vacc[3]), vacc[1]/(vacc[1]+vacc[4]),
-                     2/( 1 + ((1-vacc[2])/vacc[1]) ), v_loss.data[0]) )
+             .format(vacc[0], vacc[2]/(vacc[2]+vacc[3]), vacc[1]/(vacc[1]+vacc[4]), f1_val, v_loss.data[0]) )
         
         #if epoch > 5 and np.mean(np.array(tacc_list[-6:-1])) < np.mean(np.array(vacc_list[-6:-1])):
         #    print("Seems like m1 starts to overfit, aborting training")
@@ -233,3 +254,27 @@ def train_net(train_list, validation_list, model, reviewDB, sensitivity = 0.5, r
         model.save_state_dict()
             
     print("Finished Training")
+    
+def inference(test_list, sensitivity = 0.5, run_mode = "Default"):
+    outputs = model(test_list, mode = run_mode)
+    targets = get_targets(test_list, model)
+    prediction = get_prediction(outputs, sensitivity)
+    
+    result = []
+    _, formatted, _ = model.encoder(test_list)
+    
+    i = 0
+    for f in formatted:
+        result.append( (reviewDB.get_review_node(f.review_id).data, outputs.data[i, 1], prediction[i]) )
+        i += 1
+    
+    acc = get_accuracy(outputs, targets, sensitivity) / len(test_list)
+    loss = criterion(outputs, targets)
+        
+    f1_val = 0.0
+    if acc[1] != 0: f1_val = 2/( 1 + ((1-acc[2])/acc[1]) )
+
+    print("\naccuracy {:.6f} | ham_acc {:.6f} | spam_acc {:.6f} | f1_score {:.6f} | loss.data {:.6f}"
+             .format(acc[0], acc[2]/(acc[2]+acc[3]), acc[1]/(acc[1]+acc[4]), f1_val, loss.data[0]) )
+    
+    convert_to_excel.convert_to_excel(result, "./result.xlsx")
