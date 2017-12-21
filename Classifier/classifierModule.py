@@ -55,11 +55,19 @@ class classifierModule(nn.Module):
             self.nb_model = load_object(self.nb_path)
         else:
             try:
-                FRlist = load_object("../Preprocessor/pkl/save_formatted_review_train.pkl")
+                FRlist = load_object("../Preprocessor/pkl/save_formatted_review_test.pkl")
             except FileNotFoundError:
-                FRlist = load_object("./Preprocessor/pkl/save_formatted_review_train.pkl")
+                FRlist = load_object("./Preprocessor/pkl/save_formatted_review_test.pkl")
             self.nb_model.add_FRlist(FRlist) #initialize nb database
-            save_object(self.nb_model, self.nb_path)
+            
+            if os.path.exists(self.nb_path):
+                save_object(self.nb_model, self.nb_path)
+            elif os.path.exists("./Classifier/models/"):
+                self.nb_path = "./Classifier/models/nb_db.pkl"
+                save_object(self.nb_model, self.nb_path)
+                
+            self.nb_model = load_object(self.nb_path)
+            
         
         self.path = path
         
